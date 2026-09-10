@@ -98,3 +98,43 @@ Flags:
 | Flag | Default | Description |
 |---|---|---|
 | `-n` | 10 | Number of top words to print |
+
+## To-Do List
+
+A persistent command-line to-do list that stores items in a JSON file.
+
+```sh
+# Add an item (creates todo.json in the working directory)
+go run ./cmd/todo add "buy milk"
+# Output: Added item 1
+
+# List all items
+go run ./cmd/todo list
+# Output: 1 [ ] buy milk
+
+# Mark item 1 as done
+go run ./cmd/todo done 1
+
+# List again to see the updated state
+go run ./cmd/todo list
+# Output: 1 [x] buy milk
+
+# Remove item 1
+go run ./cmd/todo rm 1
+
+# List after removal (no output - list is empty)
+go run ./cmd/todo list
+```
+
+Use the `-file` flag to store items in a custom path:
+
+```sh
+go run ./cmd/todo -file /tmp/work.json add "finish report"
+go run ./cmd/todo -file /tmp/work.json list
+```
+
+Flags:
+
+| Flag | Default | Description |
+|---|---|---|
+| `-file` | `todo.json` | Path to the JSON storage file |
