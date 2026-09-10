@@ -183,3 +183,30 @@ import "github.com/muli-cohen/pdlc2/roman"
 s, err := roman.ToRoman(1994)   // "MCMXCIV", nil
 n, err := roman.FromRoman("IV") // 4, nil
 ```
+
+## Caesar Cipher
+
+Encode or decode text using a Caesar (rotation) cipher.
+
+```sh
+# Encode
+go run ./cmd/caesar -shift 3 "attack at dawn"
+# Output: dwwdfn dw gdzq
+
+# Decode
+go run ./cmd/caesar -decode -shift 3 "dwwdfn dw gdzq"
+# Output: attack at dawn
+
+# Stdin
+echo "abc" | go run ./cmd/caesar
+# Output: def
+```
+
+Flags:
+
+| Flag | Default | Description |
+|---|---|---|
+| `-shift` | 3 | Number of positions to shift (any integer; normalised mod 26) |
+| `-decode` | false | Decode instead of encode |
+
+Supplying both a positional argument and piped stdin exits non-zero with an error message.
