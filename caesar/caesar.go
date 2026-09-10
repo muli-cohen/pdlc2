@@ -20,8 +20,10 @@ func Encode(text string, shift int) (string, error) {
 	return string(buf), nil
 }
 
-// Decode reverses Encode by applying a shift of -shift positions.
+// Decode reverses Encode by applying the inverse shift.
+// Normalises shift before negating to avoid overflow at math.MinInt.
 // The error return is always nil for any int shift.
 func Decode(text string, shift int) (string, error) {
-	return Encode(text, -shift)
+	n := ((shift % 26) + 26) % 26
+	return Encode(text, 26-n)
 }

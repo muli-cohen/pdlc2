@@ -132,6 +132,17 @@ func TestCLIConflict(t *testing.T) {
 	}
 }
 
+// TestCLIInvalidShift verifies AC10: a non-integer -shift value exits non-zero with a human-readable error.
+func TestCLIInvalidShift(t *testing.T) {
+	stdout, stderr, code := runCaesar(t, "", "-shift", "abc", "hello")
+	if code == 0 {
+		t.Fatalf("expected non-zero exit for invalid shift, got 0; stdout: %s", stdout)
+	}
+	if stderr == "" {
+		t.Error("expected error message on stderr for invalid shift, got nothing")
+	}
+}
+
 // TestREADMEDocumentsUsage verifies AC12: README contains the three required usage examples.
 func TestREADMEDocumentsUsage(t *testing.T) {
 	readme := filepath.Join(repoRoot(t), "README.md")
