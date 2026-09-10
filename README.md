@@ -138,3 +138,48 @@ Flags:
 | Flag | Default | Description |
 |---|---|---|
 | `-file` | `todo.json` | Path to the JSON storage file |
+
+## Roman Numeral Converter
+
+Convert between integers and Roman numerals. The CLI auto-detects direction: an integer argument converts to a numeral; a numeral argument converts to an integer.
+
+```sh
+# Integer to numeral
+go run ./cmd/roman 1994
+# Output: MCMXCIV
+
+# Numeral to integer
+go run ./cmd/roman MCMXCIV
+# Output: 1994
+
+# Case-insensitive numeral input
+go run ./cmd/roman mcmxciv
+# Output: 1994
+```
+
+**Error cases:**
+
+```sh
+# Out-of-range integer (supported range: 1-3999)
+go run ./cmd/roman 0
+# stderr: value 0 out of range: roman numerals support 1-3999
+# exit code: 1
+
+go run ./cmd/roman 4000
+# stderr: value 4000 out of range: roman numerals support 1-3999
+# exit code: 1
+
+# Non-canonical numeral
+go run ./cmd/roman IIII
+# stderr: invalid roman numeral "IIII": not in canonical form
+# exit code: 1
+```
+
+The library package can also be imported directly:
+
+```go
+import "github.com/muli-cohen/pdlc2/roman"
+
+s, err := roman.ToRoman(1994)   // "MCMXCIV", nil
+n, err := roman.FromRoman("IV") // 4, nil
+```
