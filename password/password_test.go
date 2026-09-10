@@ -1,6 +1,7 @@
 package password
 
 import (
+	"os"
 	"strings"
 	"testing"
 	"unicode"
@@ -102,5 +103,21 @@ func assertContainsClass(t *testing.T, result, class, name string) {
 	t.Helper()
 	if !strings.ContainsAny(result, class) {
 		t.Fatalf("expected at least one %s character in %q", name, result)
+	}
+}
+
+// TestNoCryptoRandExclusive reads the package source and verifies that math/rand is not imported
+// while crypto/rand is, enforcing the FR6 requirement at the source level.
+func TestNoCryptoRandExclusive(t *testing.T) {
+	src, err := os.ReadFile("password.go")
+	if err != nil {
+		t.Fatalf("could not read password.go: %v", err)
+	}
+	content := string(src)
+	if !strings.Contains(content, `"crypto/rand"`) {
+		t.Error("password.go must import crypto/rand but does not")
+	}
+	if strings.Contains(content, `"math/rand"`) {
+		t.Error("password.go must not import math/rand, but it does")
 	}
 }
