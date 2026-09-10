@@ -80,3 +80,21 @@ Flags:
 | `-symbols` | true | Include symbols |
 
 Lowercase letters are always included. Two consecutive runs with the same flags will produce different passwords.
+
+## Word Frequency Counter
+
+Count the most frequent words in a file or text stream.
+
+```sh
+# Top 10 words in a file
+go run ./cmd/wordfreq README.md
+
+# Top 5 words from stdin
+cat README.md | go run ./cmd/wordfreq -n 5
+```
+
+Flags:
+
+| Flag | Default | Description |
+|---|---|---|
+| `-n` | 10 | Number of top words to print |
