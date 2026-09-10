@@ -39,3 +39,13 @@ go run ./cmd/calc 1 ^ 2
 # stderr: unsupported operator: ^
 # exit code: 1
 ```
+
+## Joke Teller
+
+Print a random joke:
+
+```sh
+go run ./cmd/joke
+```
+
+Running the command repeatedly will produce different jokes. No arguments are accepted; passing any argument exits with code 1 and prints a usage message to stderr.
