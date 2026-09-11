@@ -1,6 +1,7 @@
 package subnet_test
 
 import (
+	"runtime/debug"
 	"testing"
 
 	"github.com/muli-cohen/pdlc2/subnet"
@@ -150,4 +151,16 @@ func TestParse(t *testing.T) {
 			t.Error("expected error, got nil")
 		}
 	})
+}
+
+// TestNoDependencies proves the "standard library only" criterion: no external module
+// dependencies must be linked into any build that includes this package.
+func TestNoDependencies(t *testing.T) {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		t.Skip("build info not available")
+	}
+	for _, dep := range info.Deps {
+		t.Errorf("external dependency present (package must use standard library only): %s@%s", dep.Path, dep.Version)
+	}
 }
