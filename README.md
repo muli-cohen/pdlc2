@@ -210,3 +210,17 @@ Flags:
 | `-decode` | false | Decode instead of encode |
 
 Supplying both a positional argument and piped stdin exits non-zero with an error message.
+
+## IPv4 Subnet Calculator
+
+Compute subnet attributes from a CIDR address:
+
+```sh
+go run ./cmd/subnet 192.168.1.10/24
+```
+
+JSON output:
+
+```sh
+go run ./cmd/subnet -json 10.0.0.0/8
+```
