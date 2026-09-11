@@ -210,3 +210,48 @@ Flags:
 | `-decode` | false | Decode instead of encode |
 
 Supplying both a positional argument and piped stdin exits non-zero with an error message.
+
+## Semantic Version Tool
+
+Parse, compare, and sort [Semantic Version 2.0.0](https://semver.org/) strings.
+
+**Compare two versions** - prints `-1`, `0`, or `1` to stdout:
+
+```sh
+go run ./cmd/semver 1.2.3 1.10.0
+# Output: -1
+
+go run ./cmd/semver 1.0.0 1.0.0+build.5
+# Output: 0  (build metadata is ignored in comparisons)
+
+go run ./cmd/semver 1.0.0-alpha 1.0.0
+# Output: -1  (pre-release ranks below the release)
+```
+
+**Sort versions from stdin** using the `-sort` flag - prints versions ascending, one per line:
+
+```sh
+printf '1.10.0\n1.2.3\n' | go run ./cmd/semver -sort
+# Output:
+# 1.2.3
+# 1.10.0
+```
+
+**Error cases:**
+
+```sh
+# Invalid version (leading zero)
+go run ./cmd/semver 1.01.0 1.2.3
+# stderr: error: invalid version "1.01.0": leading zero in numeric identifier
+# exit code: 1
+
+# Wrong argument count
+go run ./cmd/semver 1.0.0
+# stderr: error: expected 2 version arguments, got 1
+# exit code: 1
+
+# -sort combined with arguments
+go run ./cmd/semver -sort 1.0.0
+# stderr: error: -sort reads from stdin and takes no version arguments
+# exit code: 1
+```
