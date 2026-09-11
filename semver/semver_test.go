@@ -1,6 +1,8 @@
 package semver
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -234,6 +236,25 @@ func TestStringRoundTrip(t *testing.T) {
 		v := mustParse(t, s)
 		if got := v.String(); got != s {
 			t.Errorf("String() = %q, want %q", got, s)
+		}
+	}
+}
+
+// TestNoDependencies is the deps-policy proof: it reads go.mod and fails if any
+// require directive is present, ensuring the module stays stdlib-only.
+func TestNoDependencies(t *testing.T) {
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("os.Getwd: %v", err)
+	}
+	data, err := os.ReadFile(filepath.Join(wd, "..", "go.mod"))
+	if err != nil {
+		t.Fatalf("cannot read go.mod: %v", err)
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "require") {
+			t.Errorf("go.mod contains require directive - third-party dependency added: %q", line)
 		}
 	}
 }
