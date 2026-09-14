@@ -210,3 +210,29 @@ Flags:
 | `-decode` | false | Decode instead of encode |
 
 Supplying both a positional argument and piped stdin exits non-zero with an error message.
+
+## Run-Length Encoding
+
+Encode or decode text using run-length encoding. Each contiguous run of identical characters is replaced by the character followed by its count; digits are not permitted in the input because they would make the encoded output ambiguous.
+
+```sh
+# Encode
+go run ./cmd/rle "aaabbc"
+# Output: a3b2c1
+
+# Decode
+go run ./cmd/rle -decode "a3b2c1"
+# Output: aaabbc
+
+# Stdin
+echo "aaab" | go run ./cmd/rle
+# Output: a3b1
+```
+
+Flags:
+
+| Flag | Default | Description |
+|---|---|---|
+| `-decode` | false | Decode instead of encode |
+
+Supplying both a positional argument and piped stdin exits non-zero with an error message.
