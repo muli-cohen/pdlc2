@@ -53,8 +53,8 @@ func Decode(text string) (string, error) {
 		if j == i {
 			return "", fmt.Errorf("malformed encoded input: character %q has no following count", ch)
 		}
-		count, _ := strconv.Atoi(text[i:j])
-		if count == 0 {
+		count, err := strconv.Atoi(text[i:j])
+		if err != nil || count == 0 {
 			return "", fmt.Errorf("malformed encoded input: character %q has a count of zero", ch)
 		}
 		for k := 0; k < count; k++ {

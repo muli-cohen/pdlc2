@@ -79,6 +79,9 @@ func TestDecodeZeroCount(t *testing.T) {
 	if got != "" {
 		t.Errorf("Decode(\"a0\") returned non-empty string %q on error", got)
 	}
+	if !strings.Contains(err.Error(), "zero") {
+		t.Errorf("error message %q does not contain \"zero\"", err.Error())
+	}
 }
 
 func TestDecodeEmpty(t *testing.T) {
