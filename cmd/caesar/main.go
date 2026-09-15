@@ -26,7 +26,7 @@ func main() {
 	var input string
 	switch {
 	case flag.NArg() > 0 && stdinPiped:
-		fmt.Fprintln(os.Stderr, "Error: cannot accept both a positional argument and piped stdin")
+		fmt.Fprintln(os.Stderr, "error: provide input as an argument or via stdin, not both")
 		os.Exit(1)
 	case flag.NArg() > 0:
 		input = flag.Arg(0)
@@ -36,7 +36,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, "error: reading stdin:", err)
 			os.Exit(1)
 		}
-		input = strings.TrimSuffix(string(data), "\n")
+		input = strings.TrimRight(string(data), "\r\n")
 	default:
 		fmt.Fprintln(os.Stderr, "usage: caesar [-shift N] [-decode] <text>")
 		fmt.Fprintln(os.Stderr, "       echo <text> | caesar [-shift N] [-decode]")
@@ -45,9 +45,13 @@ func main() {
 
 	var result string
 	if *decode {
-		result, _ = caesar.Decode(input, *shift)
+		result, err = caesar.Decrypt(input, *shift)
 	} else {
-		result, _ = caesar.Encode(input, *shift)
+		result, err = caesar.Encrypt(input, *shift)
+	}
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
 	}
 	fmt.Println(result)
 }
