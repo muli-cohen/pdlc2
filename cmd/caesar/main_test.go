@@ -37,6 +37,18 @@ func runCaesar(t *testing.T, stdin string, args ...string) (stdout, stderr strin
 	return outBuf.String(), errBuf.String(), exitCode
 }
 
+// TestCLIDefaultShift verifies AC3: no -shift flag uses default shift of 3.
+func TestCLIDefaultShift(t *testing.T) {
+	stdout, stderr, code := runCaesar(t, "", "attack at dawn")
+	if code != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", code, stderr)
+	}
+	got := strings.TrimSpace(stdout)
+	if got != "dwwdfn dw gdzq" {
+		t.Errorf("got %q, want %q", got, "dwwdfn dw gdzq")
+	}
+}
+
 // TestCLIEncodeArg verifies AC1/AC3: positional argument encoding exits 0 with correct output.
 func TestCLIEncodeArg(t *testing.T) {
 	stdout, stderr, code := runCaesar(t, "", "-shift", "3", "attack at dawn")
