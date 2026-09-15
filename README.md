@@ -255,3 +255,26 @@ go run ./cmd/semver -sort 1.0.0
 # stderr: error: -sort reads from stdin and takes no version arguments
 # exit code: 1
 ```
+
+## Brackets Checker
+
+Check whether bracket pairs (`()`, `[]`, `{}`) are balanced in a string.
+
+```sh
+# Default mode: check balance of an argument string
+go run ./cmd/brackets "(a[b]{c})"
+# Output: balanced
+
+go run ./cmd/brackets "(a[b)]"
+# Output: unbalanced
+
+# Position mode: print the 0-based byte index of the first mismatch
+go run ./cmd/brackets -position "(a[b)]"
+# Output: 4
+
+# Stdin input
+echo "{[()]}" | go run ./cmd/brackets
+# Output: balanced
+```
+
+Supplying both a positional argument and piped stdin exits non-zero with an error message.
