@@ -211,6 +211,35 @@ Flags:
 
 Supplying both a positional argument and piped stdin exits non-zero with an error message.
 
+## Run-Length Encoding (RLE)
+
+Encode or decode text using run-length encoding. Each run of identical characters
+is replaced by the character followed by its decimal count (e.g., `aaabbc` -> `a3b2c1`).
+
+```sh
+# Encode a string
+go run ./cmd/rle "aaabbc"
+# Output: a3b2c1
+
+# Decode an encoded string
+go run ./cmd/rle -decode "a3b2c1"
+# Output: aaabbc
+
+# Encode from stdin (trailing newline is stripped)
+echo "aaab" | go run ./cmd/rle
+# Output: a3b1
+```
+
+Flags:
+
+| Flag | Default | Description |
+|---|---|---|
+| `-decode` | false | Decode instead of encode |
+
+**Note:** Encoding rejects any input that contains a digit (0-9). Digits are
+reserved for count suffixes in the encoded form and cannot appear in plain text
+passed to `Encode`.
+
 ## Semantic Version Tool
 
 Parse, compare, and sort [Semantic Version 2.0.0](https://semver.org/) strings.
