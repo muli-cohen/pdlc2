@@ -200,6 +200,17 @@ func TestEncryptNonASCII(t *testing.T) {
 	}
 }
 
+// AC: Encrypt("Hello, World!", 3) returns ("Khoor, Zruog!", nil) - mixed case with punctuation
+func TestEncryptMixedCaseNonLetters(t *testing.T) {
+	got, err := Encrypt("Hello, World!", 3)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got != "Khoor, Zruog!" {
+		t.Errorf("got %q, want %q", got, "Khoor, Zruog!")
+	}
+}
+
 // FR22: non-ASCII input causes Decrypt to return a non-nil error
 func TestDecryptNonASCII(t *testing.T) {
 	got, err := Decrypt("caf\xc3\xa9", 3)
