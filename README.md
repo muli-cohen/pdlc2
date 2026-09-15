@@ -189,15 +189,27 @@ n, err := roman.FromRoman("IV") // 4, nil
 Encode or decode text using a Caesar (rotation) cipher.
 
 ```sh
-# Encode
+# Basic encryption (default shift 3)
+go run ./cmd/caesar "attack at dawn"
+# Output: dwwdfn dw gdzq
+
+# Encryption with explicit shift
 go run ./cmd/caesar -shift 3 "attack at dawn"
 # Output: dwwdfn dw gdzq
 
-# Decode
+# Decryption with explicit shift
 go run ./cmd/caesar -decode -shift 3 "dwwdfn dw gdzq"
 # Output: attack at dawn
 
-# Stdin
+# Negative-shift shorthand (equivalent to decryption with shift 3)
+go run ./cmd/caesar -shift -3 "dwwdfn dw gdzq"
+# Output: attack at dawn
+
+# Stdin usage
+echo "hello" | go run ./cmd/caesar -shift 1
+# Output: ifmmp
+
+# Stdin with default shift
 echo "abc" | go run ./cmd/caesar
 # Output: def
 ```

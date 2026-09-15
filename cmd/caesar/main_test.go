@@ -3,10 +3,10 @@ package main_test
 import (
 	"bytes"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
-	"os/exec"
 )
 
 func repoRoot(t *testing.T) string {
@@ -37,7 +37,7 @@ func runCaesar(t *testing.T, stdin string, args ...string) (stdout, stderr strin
 	return outBuf.String(), errBuf.String(), exitCode
 }
 
-// TestCLIEncodeArg verifies AC1/AC3: positional argument encoding exits 0 with correct output.
+// TestCLIEncodeArg verifies AC3: positional argument encoding exits 0 with correct output.
 func TestCLIEncodeArg(t *testing.T) {
 	stdout, stderr, code := runCaesar(t, "", "-shift", "3", "attack at dawn")
 	if code != 0 {
@@ -49,7 +49,19 @@ func TestCLIEncodeArg(t *testing.T) {
 	}
 }
 
-// TestCLIDecodeArg verifies AC2/AC4: decode flag with positional argument exits 0 with correct output.
+// TestCLIEncodeDefaultShift verifies AC3: default shift 3 with no -shift flag.
+func TestCLIEncodeDefaultShift(t *testing.T) {
+	stdout, stderr, code := runCaesar(t, "", "attack at dawn")
+	if code != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", code, stderr)
+	}
+	got := strings.TrimSpace(stdout)
+	if got != "dwwdfn dw gdzq" {
+		t.Errorf("got %q, want %q", got, "dwwdfn dw gdzq")
+	}
+}
+
+// TestCLIDecodeArg verifies AC4: decode flag with positional argument exits 0 with correct output.
 func TestCLIDecodeArg(t *testing.T) {
 	stdout, stderr, code := runCaesar(t, "", "-decode", "-shift", "3", "dwwdfn dw gdzq")
 	if code != 0 {
@@ -61,19 +73,31 @@ func TestCLIDecodeArg(t *testing.T) {
 	}
 }
 
-// TestCLIWrapAround verifies AC3/AC5: wrap-around from z to a and Z to A.
-func TestCLIWrapAround(t *testing.T) {
-	stdout, stderr, code := runCaesar(t, "", "-shift", "1", "xyz XYZ")
+// TestCLINegativeShift verifies AC5: negative shift decrypts correctly.
+func TestCLINegativeShift(t *testing.T) {
+	stdout, stderr, code := runCaesar(t, "", "-shift", "-3", "dwwdfn dw gdzq")
 	if code != 0 {
 		t.Fatalf("expected exit 0, got %d; stderr: %s", code, stderr)
 	}
 	got := strings.TrimSpace(stdout)
-	if got != "yza YZA" {
-		t.Errorf("got %q, want %q", got, "yza YZA")
+	if got != "attack at dawn" {
+		t.Errorf("got %q, want %q", got, "attack at dawn")
 	}
 }
 
-// TestCLIPassThrough verifies AC4/AC6: non-letter characters are unchanged.
+// TestCLIWrapAround verifies AC6: wrap-around from Z to A with default shift 3.
+func TestCLIWrapAround(t *testing.T) {
+	stdout, stderr, code := runCaesar(t, "", "XYZ")
+	if code != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", code, stderr)
+	}
+	got := strings.TrimSpace(stdout)
+	if got != "ABC" {
+		t.Errorf("got %q, want %q", got, "ABC")
+	}
+}
+
+// TestCLIPassThrough verifies non-letter characters are unchanged.
 func TestCLIPassThrough(t *testing.T) {
 	stdout, stderr, code := runCaesar(t, "", "-shift", "3", "hello, world! 123")
 	if code != 0 {
@@ -85,7 +109,7 @@ func TestCLIPassThrough(t *testing.T) {
 	}
 }
 
-// TestCLIShiftZero verifies AC5/AC7: shift 0 produces identity.
+// TestCLIShiftZero verifies shift 0 produces identity.
 func TestCLIShiftZero(t *testing.T) {
 	stdout, stderr, code := runCaesar(t, "", "-shift", "0", "abc")
 	if code != 0 {
@@ -109,30 +133,41 @@ func TestCLIShift26(t *testing.T) {
 	}
 }
 
-// TestCLIStdin verifies AC6/AC8: stdin input with default shift 3.
+// TestCLIStdin verifies AC8: stdin input with shift 1 strips trailing newline.
 func TestCLIStdin(t *testing.T) {
-	stdout, stderr, code := runCaesar(t, "abc\n")
+	stdout, stderr, code := runCaesar(t, "hello\n", "-shift", "1")
 	if code != 0 {
 		t.Fatalf("expected exit 0, got %d; stderr: %s", code, stderr)
 	}
 	got := strings.TrimSpace(stdout)
-	if got != "def" {
-		t.Errorf("got %q, want %q", got, "def")
+	if got != "ifmmp" {
+		t.Errorf("got %q, want %q", got, "ifmmp")
 	}
 }
 
-// TestCLIConflict verifies AC7/AC9: positional argument + piped stdin exits non-zero with error.
+// TestCLIConflict verifies AC9: positional argument + piped stdin exits non-zero with error.
 func TestCLIConflict(t *testing.T) {
 	stdout, stderr, code := runCaesar(t, "abc\n", "xyz")
 	if code == 0 {
 		t.Fatalf("expected non-zero exit for arg+stdin conflict, got 0; stdout: %s", stdout)
 	}
-	if !strings.Contains(stderr, "cannot accept both") {
+	if !strings.Contains(stderr, "not both") {
 		t.Errorf("expected conflict error message in stderr, got: %s", stderr)
 	}
 }
 
-// TestCLIInvalidShift verifies AC10: a non-integer -shift value exits non-zero with a human-readable error.
+// TestCLINonASCII verifies AC7: non-ASCII input exits non-zero with stderr message about non-ASCII.
+func TestCLINonASCII(t *testing.T) {
+	stdout, stderr, code := runCaesar(t, "", "caf\xc3\xa9")
+	if code == 0 {
+		t.Fatalf("expected non-zero exit for non-ASCII input, got 0; stdout: %s", stdout)
+	}
+	if !strings.Contains(stderr, "non-ASCII") {
+		t.Errorf("expected non-ASCII error message in stderr, got: %s", stderr)
+	}
+}
+
+// TestCLIInvalidShift verifies a non-integer -shift value exits non-zero with a human-readable error.
 func TestCLIInvalidShift(t *testing.T) {
 	stdout, stderr, code := runCaesar(t, "", "-shift", "abc", "hello")
 	if code == 0 {
@@ -143,7 +178,7 @@ func TestCLIInvalidShift(t *testing.T) {
 	}
 }
 
-// TestREADMEDocumentsUsage verifies AC12: README contains the three required usage examples.
+// TestREADMEDocumentsUsage verifies AC12: README contains the four required FR22 usage examples.
 func TestREADMEDocumentsUsage(t *testing.T) {
 	readme := filepath.Join(repoRoot(t), "README.md")
 	data, err := os.ReadFile(readme)
@@ -152,9 +187,10 @@ func TestREADMEDocumentsUsage(t *testing.T) {
 	}
 	content := string(data)
 	examples := []string{
-		`go run ./cmd/caesar -shift 3 "attack at dawn"`,
+		`go run ./cmd/caesar "attack at dawn"`,
 		`go run ./cmd/caesar -decode -shift 3 "dwwdfn dw gdzq"`,
-		`echo "abc" | go run ./cmd/caesar`,
+		`go run ./cmd/caesar -shift -3 "dwwdfn dw gdzq"`,
+		`echo "hello" | go run ./cmd/caesar -shift 1`,
 	}
 	for _, ex := range examples {
 		if !strings.Contains(content, ex) {
