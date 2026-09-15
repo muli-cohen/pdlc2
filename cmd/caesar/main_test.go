@@ -127,8 +127,22 @@ func TestCLIConflict(t *testing.T) {
 	if code == 0 {
 		t.Fatalf("expected non-zero exit for arg+stdin conflict, got 0; stdout: %s", stdout)
 	}
-	if !strings.Contains(stderr, "cannot accept both") {
+	if !strings.Contains(stderr, "not both") {
 		t.Errorf("expected conflict error message in stderr, got: %s", stderr)
+	}
+}
+
+// TestCLINonASCII verifies AC7/FR14/FR22: non-ASCII input exits non-zero with error on stderr.
+func TestCLINonASCII(t *testing.T) {
+	stdout, stderr, code := runCaesar(t, "", "caf\xc3\xa9")
+	if code == 0 {
+		t.Fatalf("expected non-zero exit for non-ASCII input, got 0; stdout: %s", stdout)
+	}
+	if !strings.Contains(stderr, "non-ASCII") && !strings.Contains(stderr, "error:") {
+		t.Errorf("expected non-ASCII error message in stderr, got: %s", stderr)
+	}
+	if stdout != "" {
+		t.Errorf("expected empty stdout on error, got: %s", stdout)
 	}
 }
 
