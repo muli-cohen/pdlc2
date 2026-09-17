@@ -1,13 +1,6 @@
 package caesar
 
-import "fmt"
-
-func Encrypt(text string, shift int) (string, error) {
-	for i := 0; i < len(text); i++ {
-		if text[i] > 127 {
-			return "", fmt.Errorf("input contains non-ASCII character")
-		}
-	}
+func Encode(text string, shift int) (string, error) {
 	n := ((shift % 26) + 26) % 26
 	buf := make([]byte, len(text))
 	for i := 0; i < len(text); i++ {
@@ -24,6 +17,6 @@ func Encrypt(text string, shift int) (string, error) {
 	return string(buf), nil
 }
 
-func Decrypt(text string, shift int) (string, error) {
-	return Encrypt(text, -shift)
+func Decode(text string, shift int) (string, error) {
+	return Encode(text, -shift)
 }
