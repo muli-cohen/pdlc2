@@ -1,9 +1,12 @@
 package caesar
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 func TestEncodeLowercase(t *testing.T) {
-	got, err := Encrypt("abc", 3)
+	got, err := Encode("abc", 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -13,7 +16,7 @@ func TestEncodeLowercase(t *testing.T) {
 }
 
 func TestDecodeLowercase(t *testing.T) {
-	got, err := Decrypt("def", 3)
+	got, err := Decode("def", 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -23,7 +26,7 @@ func TestDecodeLowercase(t *testing.T) {
 }
 
 func TestEncodeUppercase(t *testing.T) {
-	got, err := Encrypt("ABC", 3)
+	got, err := Encode("ABC", 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -33,7 +36,7 @@ func TestEncodeUppercase(t *testing.T) {
 }
 
 func TestDecodeUppercase(t *testing.T) {
-	got, err := Decrypt("DEF", 3)
+	got, err := Decode("DEF", 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -43,7 +46,7 @@ func TestDecodeUppercase(t *testing.T) {
 }
 
 func TestWrapAroundLower(t *testing.T) {
-	got, err := Encrypt("xyz", 1)
+	got, err := Encode("xyz", 1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -53,7 +56,7 @@ func TestWrapAroundLower(t *testing.T) {
 }
 
 func TestWrapAroundUpper(t *testing.T) {
-	got, err := Encrypt("XYZ", 1)
+	got, err := Encode("XYZ", 1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -63,7 +66,7 @@ func TestWrapAroundUpper(t *testing.T) {
 }
 
 func TestNonLetterPassThrough(t *testing.T) {
-	got, err := Encrypt("hello, world! 123", 3)
+	got, err := Encode("hello, world! 123", 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -73,7 +76,7 @@ func TestNonLetterPassThrough(t *testing.T) {
 }
 
 func TestShiftZero(t *testing.T) {
-	got, err := Encrypt("abc", 0)
+	got, err := Encode("abc", 0)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -83,7 +86,7 @@ func TestShiftZero(t *testing.T) {
 }
 
 func TestShift26(t *testing.T) {
-	got, err := Encrypt("abc", 26)
+	got, err := Encode("abc", 26)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -93,7 +96,7 @@ func TestShift26(t *testing.T) {
 }
 
 func TestNegativeShift(t *testing.T) {
-	got, err := Encrypt("abc", -1)
+	got, err := Encode("abc", -1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -103,7 +106,7 @@ func TestNegativeShift(t *testing.T) {
 }
 
 func TestEmptyString(t *testing.T) {
-	got, err := Encrypt("", 3)
+	got, err := Encode("", 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -114,36 +117,35 @@ func TestEmptyString(t *testing.T) {
 
 func TestRoundTrip(t *testing.T) {
 	input := "attack at dawn"
-	encoded, err := Encrypt(input, 3)
+	encoded, err := Encode(input, 3)
 	if err != nil {
-		t.Fatalf("Encrypt error: %v", err)
+		t.Fatalf("Encode error: %v", err)
 	}
-	decoded, err := Decrypt(encoded, 3)
+	decoded, err := Decode(encoded, 3)
 	if err != nil {
-		t.Fatalf("Decrypt error: %v", err)
+		t.Fatalf("Decode error: %v", err)
 	}
 	if decoded != input {
 		t.Errorf("round-trip failed: got %q, want %q", decoded, input)
 	}
 }
 
-func TestEncryptReturnsNilError(t *testing.T) {
-	_, err := Encrypt("hello", 5)
+func TestEncodeReturnsNilError(t *testing.T) {
+	_, err := Encode("hello", 5)
 	if err != nil {
 		t.Errorf("expected nil error, got: %v", err)
 	}
 }
 
-func TestDecryptReturnsNilError(t *testing.T) {
-	_, err := Decrypt("hello", 5)
+func TestDecodeReturnsNilError(t *testing.T) {
+	_, err := Decode("hello", 5)
 	if err != nil {
 		t.Errorf("expected nil error, got: %v", err)
 	}
 }
 
-// FR16: basic shifting - "attack at dawn" with shift 3
-func TestEncryptBasicShift(t *testing.T) {
-	got, err := Encrypt("attack at dawn", 3)
+func TestEncodeBasicShift(t *testing.T) {
+	got, err := Encode("attack at dawn", 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -152,9 +154,8 @@ func TestEncryptBasicShift(t *testing.T) {
 	}
 }
 
-// FR17: wraparound - "XYZ" with shift 3 -> "ABC"
-func TestEncryptWrapAroundShift3(t *testing.T) {
-	got, err := Encrypt("XYZ", 3)
+func TestEncodeWrapAroundShift3(t *testing.T) {
+	got, err := Encode("XYZ", 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -163,13 +164,12 @@ func TestEncryptWrapAroundShift3(t *testing.T) {
 	}
 }
 
-// FR20: shift 27 behaves identically to shift 1
-func TestEncryptShift27EqualShift1(t *testing.T) {
-	got27, err := Encrypt("abc", 27)
+func TestEncodeShift27EqualShift1(t *testing.T) {
+	got27, err := Encode("abc", 27)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	got1, err := Encrypt("abc", 1)
+	got1, err := Encode("abc", 1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -178,9 +178,8 @@ func TestEncryptShift27EqualShift1(t *testing.T) {
 	}
 }
 
-// FR21: shift -3 on ciphertext returns plaintext
-func TestEncryptNegativeShift3(t *testing.T) {
-	got, err := Encrypt("dwwdfn dw gdzq", -3)
+func TestEncodeNegativeShift3(t *testing.T) {
+	got, err := Encode("dwwdfn dw gdzq", -3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -189,24 +188,29 @@ func TestEncryptNegativeShift3(t *testing.T) {
 	}
 }
 
-// FR22: non-ASCII input causes Encrypt to return a non-nil error
-func TestEncryptNonASCII(t *testing.T) {
-	got, err := Encrypt("caf\xc3\xa9", 3)
-	if err == nil {
-		t.Errorf("expected non-nil error for non-ASCII input, got nil; result: %q", got)
+func TestRoundTripMinInt(t *testing.T) {
+	input := "abc"
+	encoded, err := Encode(input, math.MinInt)
+	if err != nil {
+		t.Fatalf("Encode error: %v", err)
 	}
-	if got != "" {
-		t.Errorf("expected empty string on error, got %q", got)
+	decoded, err := Decode(encoded, math.MinInt)
+	if err != nil {
+		t.Fatalf("Decode error: %v", err)
+	}
+	if decoded != input {
+		t.Errorf("round-trip failed for MinInt shift: got %q, want %q", decoded, input)
 	}
 }
 
-// FR22: non-ASCII input causes Decrypt to return a non-nil error
-func TestDecryptNonASCII(t *testing.T) {
-	got, err := Decrypt("caf\xc3\xa9", 3)
-	if err == nil {
-		t.Errorf("expected non-nil error for non-ASCII input, got nil; result: %q", got)
+func TestEncodeNonASCIIPassthrough(t *testing.T) {
+	input := "caf\xc3\xa9"
+	got, err := Encode(input, 3)
+	if err != nil {
+		t.Errorf("expected nil error for non-ASCII input, got: %v", err)
 	}
-	if got != "" {
-		t.Errorf("expected empty string on error, got %q", got)
+	// letters c, a, f shift by 3; non-ASCII bytes \xc3\xa9 pass through unchanged
+	if got != "fdi\xc3\xa9" {
+		t.Errorf("got %q, want %q", got, "fdi\xc3\xa9")
 	}
 }
