@@ -25,10 +25,13 @@ func main() {
 
 	var input string
 	switch {
-	case flag.NArg() > 0 && stdinPiped:
+	case flag.NArg() > 1:
+		fmt.Fprintln(os.Stderr, "error: too many arguments; provide a single text argument")
+		os.Exit(1)
+	case flag.NArg() == 1 && stdinPiped:
 		fmt.Fprintln(os.Stderr, "error: provide input as an argument or via stdin, not both")
 		os.Exit(1)
-	case flag.NArg() > 0:
+	case flag.NArg() == 1:
 		input = flag.Arg(0)
 	case stdinPiped:
 		data, err := io.ReadAll(os.Stdin)
@@ -36,7 +39,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, "error: reading stdin:", err)
 			os.Exit(1)
 		}
-		input = strings.TrimSuffix(string(data), "\n")
+		input = strings.TrimRight(string(data), "\r\n")
 	default:
 		fmt.Fprintln(os.Stderr, "usage: caesar [-shift N] [-decode] <text>")
 		fmt.Fprintln(os.Stderr, "       echo <text> | caesar [-shift N] [-decode]")
@@ -45,13 +48,13 @@ func main() {
 
 	var result string
 	if *decode {
-		result, err = caesar.Decrypt(input, *shift)
+		result, err = caesar.Decode(input, *shift)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "error:", err)
 			os.Exit(1)
 		}
 	} else {
-		result, err = caesar.Encrypt(input, *shift)
+		result, err = caesar.Encode(input, *shift)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "error:", err)
 			os.Exit(1)
