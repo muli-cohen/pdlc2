@@ -1,6 +1,9 @@
 package caesar
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 func TestEncodeLowercase(t *testing.T) {
 	got, err := Encode("abc", 3)
@@ -182,6 +185,21 @@ func TestEncodeNegativeShift3(t *testing.T) {
 	}
 	if got != "attack at dawn" {
 		t.Errorf("got %q, want %q", got, "attack at dawn")
+	}
+}
+
+func TestRoundTripMinInt(t *testing.T) {
+	input := "abc"
+	encoded, err := Encode(input, math.MinInt)
+	if err != nil {
+		t.Fatalf("Encode error: %v", err)
+	}
+	decoded, err := Decode(encoded, math.MinInt)
+	if err != nil {
+		t.Fatalf("Decode error: %v", err)
+	}
+	if decoded != input {
+		t.Errorf("round-trip failed for MinInt shift: got %q, want %q", decoded, input)
 	}
 }
 

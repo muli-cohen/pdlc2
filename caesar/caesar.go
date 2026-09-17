@@ -18,5 +18,6 @@ func Encode(text string, shift int) (string, error) {
 }
 
 func Decode(text string, shift int) (string, error) {
-	return Encode(text, -shift)
+	inverse := (26 - ((shift%26+26)%26)) % 26
+	return Encode(text, inverse)
 }
